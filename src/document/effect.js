@@ -1,8 +1,7 @@
 import ItemDialog from "../apps/item-dialog";
-import { format, log, systemConfig } from "../util/utility";
+import { format, log, systemConfig, localize } from "../util/utility";
 import WarhammerScript from "../system/script";
 import { WarhammerTestBase } from "../system/test";
-import { SocketHandlers } from "../util/socket-handlers";
 import ZoneHelpers from "../util/zone-helpers";
 
 export default class WarhammerActiveEffect extends CONFIG.ActiveEffect.documentClass
@@ -21,7 +20,11 @@ export default class WarhammerActiveEffect extends CONFIG.ActiveEffect.documentC
         // Take a copy of the test result that this effect comes from, if any
         // We can't use simply take a reference to the message id and retrieve the test as
         // creating a Test object before actors are ready (scripts can execute before that) throws errors
-        this.updateSource({[`system.sourceData.test`] : game.messages.get(options.message)?.system?.test || this.system.sourceData.test});
+        let test = game.messages.get(options.message)?.system?.test;
+        if (test)
+        {
+            this.updateSource({[`system.sourceData.test`] : {...test}});
+        }
 
         let preventCreation = false;
         preventCreation = await this._handleFilter(data, options, user);
@@ -281,7 +284,7 @@ export default class WarhammerActiveEffect extends CONFIG.ActiveEffect.documentC
 
         if (transferData.avoidTest.value == "script")
         {
-            let script = new WarhammerScript({label : "Resist " + this.effect, script : transferData.avoidTest.script}, WarhammerScript.createContext(this));
+            let script = new WarhammerScript({label : `${localize("WH.Resist")}: ${this.effect}`, script : transferData.avoidTest.script}, WarhammerScript.createContext(this));
             return await script.execute();
         }
     }
@@ -294,7 +297,7 @@ export default class WarhammerActiveEffect extends CONFIG.ActiveEffect.documentC
         }
         else 
         {
-            let script = new WarhammerScript({script : this.system.transferData.preApplyScript, label : `Pre-Apply Script for ${this.name}`, async: true}, WarhammerScript.createContext(this));
+            let script = new WarhammerScript({script : this.system.transferData.preApplyScript, label : format("WH.PreApplyScript", {name: this.name}), async: true}, WarhammerScript.createContext(this));
             return await script.execute(args);
         }
     }
@@ -330,7 +333,7 @@ export default class WarhammerActiveEffect extends CONFIG.ActiveEffect.documentC
 
         if (this.system.transferData.enableConditionScript && this.actor)
         {
-            this.conditionScript = new WarhammerScript({script : this.system.transferData.enableConditionScript, label : `Enable Script for ${this.name}`}, WarhammerScript.createContext(this));
+            this.conditionScript = new WarhammerScript({script : this.system.transferData.enableConditionScript, label : format("WH.EnableScript", {name: this.name})}, WarhammerScript.createContext(this));
             this.disabled = !this.conditionScript.execute();
         }
 
@@ -532,6 +535,7 @@ export default class WarhammerActiveEffect extends CONFIG.ActiveEffect.documentC
     /**
      * Some effects are created in memory, not in the database.
      * Most notably item traits/properties
+     * @returns {string|undefined} The path flag value for this effect, if set.
      */
     get path()
     {
@@ -570,14 +574,15 @@ export default class WarhammerActiveEffect extends CONFIG.ActiveEffect.documentC
     get sourceTest() 
     {
         let test = this.system.sourceData.test;
-        if (test instanceof WarhammerTestBase)
-        {
-            return test;
-        }
-        else 
-        {
-            return test.data;
-        }
+        return test;
+        // if (test instanceof WarhammerTestBase)
+        // {
+        //     return test;
+        // }
+        // else 
+        // {
+        //     return test.data;
+        // }
     }
 
     get sourceActor() 

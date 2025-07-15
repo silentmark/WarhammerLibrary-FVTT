@@ -1,9 +1,9 @@
-import WarhammerSheetMixinV2 from "../sheets/v2/mixin";
+import { localize } from "../util/utility";
 
 const { ApplicationV2 } = foundry.applications.api;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 
-export default class WarhammerDiffEditor extends WarhammerSheetMixinV2(HandlebarsApplicationMixin(ApplicationV2))
+export default class WarhammerDiffEditor extends HandlebarsApplicationMixin(ApplicationV2)
 {    
     static DEFAULT_OPTIONS = {
         tag : "form",
@@ -73,7 +73,7 @@ export default class WarhammerDiffEditor extends WarhammerSheetMixinV2(Handlebar
         }
         else if (item.type)
         {
-            ui.notifications.error("Mismatched Item type");
+            ui.notifications.error("WH.Error.MismatchedItemType", {localize: true});
         }
     }
 
@@ -91,9 +91,9 @@ export default class WarhammerDiffEditor extends WarhammerSheetMixinV2(Handlebar
         return true;
     }
       
-    static async _onClickContentLink(ev)
+    static async _onClickContentLink(ev, target)
     {
-        let document = await this._getDocumentAsync(ev);
-        document.sheet.render(true, {editable : false});
+        let document = await foundry.utils.fromUuid(target.dataset.uuid);
+        document?.sheet.render(true, {editable : false});
     }
 }
