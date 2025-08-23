@@ -78,22 +78,15 @@ export class SocketHandlers
         return result;
     }
 
-    static async applyEffect({effectUuids, effectData, actorUuid, messageId}, userId)
+    static async applyEffect({effectUuids, effectData, actorUuid, messageId})
     {
-        let result = null;
-        if (game.user.id == userId)
-        {
-            result = await fromUuidSync(actorUuid)?.applyEffect({effectUuids, effectData, messageId});
-        }  
+        const result = await fromUuidSync(actorUuid)?.applyEffect({effectUuids, effectData, messageId});
+        return result;
     }
 
-    static async applyZoneEffect({effectUuids, effectData, regionUuid, messageId}, userId)
+    static async applyZoneEffect({effectUuids, effectData, regionUuid, messageId})
     {
-        let result = null;
-        if (game.user.id == userId)
-        {
-            result = await ZoneHelpers.applyEffectToZone({effectUuids, effectData}, fromUuidSync(regionUuid), messageId);
-        }
+        const result = await ZoneHelpers.applyEffectToZone({effectUuids, effectData}, fromUuidSync(regionUuid), messageId);
         return result;
     }
 
