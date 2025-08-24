@@ -6,6 +6,7 @@ import CDP from 'chrome-remote-interface';
 import { spawn } from 'child_process';
 import os from 'os';
 import fs from 'fs';
+import http from 'http';
 
 const configPath = path.resolve('./foundryconfig.json');
 const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
@@ -91,12 +92,32 @@ export async function reloadAll() {
 }
 
 /**
+ * Check if Chrome is running on the specified port
+ * @param {number} port a remote debug port number
+ * @returns {Promise<boolean>} a promise that resolves to true if Chrome is running, false otherwise
+ */
+function isChromeRunning(port) {
+  return new Promise(resolve => {
+    const req = http.get({ hostname: 'localhost', port, path: '/json' }, res => {
+      resolve(res.statusCode === 200);
+    });
+    req.on('error', () => resolve(false));
+    req.end();
+  });
+}
+
+/**
  * Launch Chrome with multiple profiles for testing
  */
 export function launchChromeProfiles() {
   console.log(`Launching Chrome with profiles: ${JSON.stringify(config.chrome.profiles)} from ${config.chrome.path}`);
 
-  config.chrome.profiles.forEach(({ port, dir }) => {
+  config.chrome.profiles.forEach(async ({ port, dir }) => {
+    const isRunning = await isChromeRunning(port);
+    if (isRunning) {
+      console.log(`Chrome is already running on port ${port}`);
+      return;
+    }
     const userDataDir = path.join(os.tmpdir(), dir);
     spawn(config.chrome.path, [
       `--remote-debugging-port=${port}`,
