@@ -31,6 +31,6 @@
     "basic-ftp": "5.0.5",
     "chrome-remote-interface": "0.33.3",
     "fast-glob": "^3.3.3",
-    "fs-extra": "^11.3.1"
+    "fs-extra": "^11.3.2"
   }
 }
