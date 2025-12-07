@@ -1,7 +1,12 @@
 import foundryConfig from "./foundry-path.js";
 import copy from 'rollup-plugin-copy';
 import postcss from "rollup-plugin-postcss";
-import { upload, reloadAll } from "./orchestrator.mjs";
+import { 
+  upload, 
+  //launchChromeProfiles,
+  //reloadAll 
+} from "./orchestrator.mjs";
+//import { setTimeout } from 'timers/promises';
 
 let modulePath = foundryConfig();
 
@@ -12,11 +17,11 @@ let modulePath = foundryConfig();
 function postBuildPlugin() {
   return {
     name: 'post-build-plugin',
-    async buildEnd() {
-      // eslint-disable-next-line no-undef
-      console.log('[Rollup] Build finished. Running post-build tasks...');
+    async writeBundle() {
       await upload();
-      await reloadAll();
+      //launchChromeProfiles();
+      //await setTimeout(5000); // Give Chrome time to start
+      //await reloadAll();
     }
   };
 }

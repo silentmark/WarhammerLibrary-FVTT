@@ -17,17 +17,22 @@ const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 export async function upload() {
   const client = new ftp.Client();
   client.ftp.verbose = config.ftp.verbose || false;
+    
 
   if (!config.ftp.host) {
     console.warn("FTP host is not configured.");
     return;
   }
-
+  const secureOptions = {
+      rejectUnauthorized: false,
+      checkServerIdentity: () => { return null; },
+  };
   await client.access({
     host: config.ftp.host,
     user: config.ftp.user,
     password: config.ftp.password,
-    secure: false
+    secure: true, 
+    secureOptions: secureOptions
   });
 
   const localRoot = path.join(config.path, "modules", "warhammer-lib")
@@ -129,10 +134,3 @@ export function launchChromeProfiles() {
     ], { detached: true, stdio: 'ignore' });
   });
 }
-
-console.log('Running all commands in sequence...');
-launchChromeProfiles();
-setTimeout(async () => {
-    await upload();
-    await reloadAll();
-}, 5000); // Give Chrome time to start
