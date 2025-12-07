@@ -3,6 +3,7 @@ import { format, log, systemConfig, localize } from "../util/utility";
 import WarhammerScript from "../system/script";
 import { WarhammerTestBase } from "../system/test";
 import ZoneHelpers from "../util/zone-helpers";
+import AreaTemplate from "../util/area-template";
 
 export default class WarhammerActiveEffect extends CONFIG.ActiveEffect.documentClass
 {
@@ -24,6 +25,14 @@ export default class WarhammerActiveEffect extends CONFIG.ActiveEffect.documentC
         if (test)
         {
             this.updateSource({[`system.sourceData.test`] : {...test}});
+        }
+        
+        if (this.parent)
+        {
+            if ((await Promise.all(this.parent.runScripts("preUpdateDocument", {data, options, user, type: "effect", document: this }))).some(e => e == false))
+            {
+                return false;
+            }
         }
 
         let preventCreation = false;
@@ -195,7 +204,7 @@ export default class WarhammerActiveEffect extends CONFIG.ActiveEffect.documentC
     async _handleConditionCreation(data, options)
     {
         // options.condition tells us that it has already gone through addCondition, so this avoids a loop
-        if (this.isCondition && !options.condition) 
+        if (this.isCondition && !options.condition && !options.temporary) 
         {
             // If adding a condition, prevent it and go through `addCondition`      // TODO handle these options
             await this.parent?.addCondition(this.key, this.conditionValue, {origin: this.origin, flags : this.flags});
@@ -237,6 +246,12 @@ export default class WarhammerActiveEffect extends CONFIG.ActiveEffect.documentC
                 items = await ItemDialog.create(items, "unlimited");
             }
 
+
+            if (!items.length)
+            {
+                ui.notifications.error("WH.Error.AppliedEffectNoItems", {localize: true});
+                throw "Failed to apply Effect";
+            }
 
             this.updateSource({"system.itemTargetData.ids" : items.map(i => i.id)});
         }
@@ -360,6 +375,15 @@ export default class WarhammerActiveEffect extends CONFIG.ActiveEffect.documentC
         return allowed;
     }
 
+
+    convertToPassive()
+    {
+        return {
+            duration: null,
+            statuses : []
+        };
+    }
+
     // To be applied, some data needs to be changed
     // Convert type to document, as applying should always affect the document being applied
     // Set the origin as the actor's uuid
@@ -442,6 +466,69 @@ export default class WarhammerActiveEffect extends CONFIG.ActiveEffect.documentC
 
         return Array.from(actors).filter(a => a.uuid != this.actor?.uuid);
     }
+
+    performEffectApplication()
+    {
+
+        if (this.system.transferData.type == "target" || (this.system.transferData.type == "aura" && this.system.transferData.area.aura.transferred))
+        {
+            return this.applyToTargets();
+        }
+        if (this.system.transferData.type == "area")
+        {
+            return this.applyToArea();
+        }
+        if (this.system.transferData.type == "zone")
+        {
+            return this.applyToZone();
+        }
+    }
+
+    async applyToTargets() 
+    {
+        let effectData;
+        effectData = this.convertToApplied();
+    
+        let targets = Array.from(game.user.targets).map(t => t.actor);    
+        if (effectData.system.transferData.selfOnly)
+        {
+            targets = [this.actor];
+        }
+        if (!(await this.runPreApplyScript({targets, effectData})))
+        {
+            return;
+        }
+        game.canvas.tokens.setTargets([]);
+    
+        await Promise.all(
+            targets.map(target => target.applyEffect({effectData}))
+        );
+    }
+    
+    async applyToArea() 
+    {
+        let effectData;
+        effectData = this.convertToApplied();
+
+        if (!(await this.runPreApplyScript({effectData})))
+        {
+            return;
+        }
+        let template = await AreaTemplate.fromEffect(this.uuid, null, null, foundry.utils.diffObject(effectData, this.convertToApplied()));
+        await template.drawPreview();
+    }
+
+    async applyToZone() 
+    {
+        let effectData;
+        effectData = this.convertToApplied();
+
+        if (!(await this.runPreApplyScript({effectData})))
+        {
+            return;
+        }
+        ZoneHelpers.promptZoneEffect({effectData : [effectData]});
+    };
 
     get show()
     {
@@ -574,15 +661,23 @@ export default class WarhammerActiveEffect extends CONFIG.ActiveEffect.documentC
 
     get manualScripts()
     {
-        if (this.disabled)
-        {
-            return [];
-        }
-        return this.scripts.filter(i => i.trigger == "manual").map((script, index) => 
+        let scripts = this.scripts.filter(i => i.trigger == "manual").map((script, index) => 
         {
             script.index = index; // When triggering manual scripts, need to know the index (listing all manual scripts on an actor is messy)
             return script;
         });
+
+        if (this.disabled)
+        {
+            scripts = scripts.filter(i => i.options.runIfDisabled);
+        }
+
+        scripts = scripts.filter(i => 
+        {
+            return !i.hidden({});
+        });
+
+        return scripts;
     }
 
     get sheetButtons() 

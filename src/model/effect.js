@@ -79,10 +79,12 @@ export class WarhammerActiveEffectModel extends foundry.abstract.DataModel
             options: new fields.SchemaField({
                 targeter: new fields.BooleanField({initial : false}),
                 defending: new fields.BooleanField({initial : false}),
+                runIfDisabled: new fields.BooleanField({initial : false}),
                 hideScript: new fields.StringField({}),
                 activateScript: new fields.StringField({}),
                 submissionScript: new fields.StringField({}),
                 deleteEffect: new fields.BooleanField({initial : false}),
+                showDuplicates: new fields.BooleanField({initial : false}),
             }),
             async: new fields.BooleanField()
         }));

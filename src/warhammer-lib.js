@@ -22,8 +22,6 @@ import AreaTemplate from "./util/area-template";
 import { WarhammerMessageModel} from "./model/message";
 import { WarhammerTestMessageModel} from "./model/test";
 import WarhammerModuleInitializer from "./modules/module-initialization";
-import { WarhammerActorSheet } from "./sheets/actor";
-import { WarhammerItemSheet } from "./sheets/item";
 import overrides from "./util/overrides";
 import { error,
     findAllItems,
@@ -44,9 +42,9 @@ import { error,
     selectedWithFallback
 } from "./util/utility";
 import { DeferredReferenceListModel, DiffReferenceListModel, DocumentReferenceListModel, ListModel } from "./model/components/list";
-import WarhammerActorSheetV2 from "./sheets/v2/actor";
+import WarhammerActorSheetV2 from "./sheets/actor";
 import { SingletonItemModel } from "./model/components/singleton-item";
-import WarhammerItemSheetV2 from "./sheets/v2/item";
+import WarhammerItemSheetV2 from "./sheets/item";
 import addSheetHelpers from "./util/sheet-helpers";
 import { WarhammerZoneConfig } from "./apps/zone-config";
 import WarhammerDiffEditor from "./apps/diff-editor";
@@ -121,8 +119,6 @@ warhammer.apps = {
     WarhammerTestBase,
     AreaTemplate,
     WarhammerModuleInitializer,
-    WarhammerActorSheet,
-    WarhammerItemSheet,
     WarhammerActorSheetV2,
     WarhammerItemSheetV2,
     WarhammerZoneConfig,
