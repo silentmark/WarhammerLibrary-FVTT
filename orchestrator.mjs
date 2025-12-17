@@ -56,7 +56,7 @@ export async function upload() {
 
     try {
       await client.uploadFrom(localPath, remoteSubPath);
-      console.log(`Uploaded: ${file}`);
+      console.log(`Uploaded: ${localPath} to ${remoteSubPath}`);
     } catch (uploadErr) {
       console.error(`Failed to upload ${file}: ${uploadErr.message}`);
     }
