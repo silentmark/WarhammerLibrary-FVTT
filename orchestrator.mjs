@@ -17,7 +17,6 @@ const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 export async function upload() {
   const client = new ftp.Client();
   client.ftp.verbose = config.ftp.verbose || false;
-    
 
   if (!config.ftp.host) {
     console.warn("FTP host is not configured.");
@@ -38,7 +37,6 @@ export async function upload() {
   const localRoot = path.join(config.path, "modules", "warhammer-lib")
   const remotePath = config.ftp.remotePath;
   const pattern = "**/**";
-
   const files = await fg(pattern, { cwd: localRoot });
 
   for (const file of files) {
