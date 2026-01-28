@@ -444,7 +444,7 @@ export default class ZoneHelpers
                     }
                 });
             });
-            document.querySelector(`#scene-controls [data-tool="snap"]`).parentElement.insertAdjacentElement("beforebegin", button);
+            document.querySelector(`#scene-controls [data-tool="clear"]`).parentElement.insertAdjacentElement("beforebegin", button);
         }
     }
 
