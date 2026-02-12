@@ -3,13 +3,13 @@
     .window-content {
 
         
-        div[data-application-part=editor] {
+        div[data-application-part=scripts] {
             height: 100%;
-            overflow:hidden
         }
         code-mirror[name='script']
         {
             height: 100%;
+            flex-grow: 1;
         }
     }
  
@@ -20,13 +20,17 @@
         // grid-template-columns: 100%;
         // grid-row-gap: 2rem;
 
+        height: 100%;
         display: flex;
         flex-direction: column;
         gap: 1rem;
         margin-top: 0.5rem;
-        .script label
-        {
-            margin-bottom: 0.5rem;
+        .script {
+            height: 100%;
+
+            label {
+                margin-bottom: 0.5rem;
+            }
         }
     }
 
